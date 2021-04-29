@@ -9,9 +9,9 @@
 - Moving, Rotating and Shooting
 - Defeating Enemies
 - Game Flow
-- Store (Purchase Flights)
-- Character Room (Select Flights and Skins)
-- Ranking (Show player's ranking)
+- Store
+- Character Room
+- Ranking
 
 
 ## Using Packages
