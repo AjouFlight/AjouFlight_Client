@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
     private static GameManager instance;
 
-    public static GameManager GetInstance
+    public static GameManager Instance
     {
         get
         {
@@ -22,10 +23,14 @@ public class GameManager : MonoBehaviour
     public bool isGameOver;
 
     public GameObject[] enemies;
-    public GameObject[] Players;
+    public GameObject[] players;
 
 
-    public int type = 0; // For prototype. It will be removed.
+    // For prototype. there will be removed.
+    public int type = 0;
+    public Text scoreText;
+    public Text hpText;
+    public Player player;
 
 
     void Start()
@@ -36,7 +41,8 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-
+        scoreText.text = score.ToString();
+        hpText.text = player.Hp.ToString();
     }
 
 

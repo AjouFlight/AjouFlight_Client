@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Player : MonoBehaviour
+public class Player : MonoBehaviour
 {
     public int Id
     {
@@ -12,23 +12,21 @@ public abstract class Player : MonoBehaviour
     public int Hp
     {
         get { return Hp; }
-        set { if (Hp < 0) Hp = 0; else Hp = value; }
+        private set { if (Hp < 0) Hp = 0; else Hp = value; }
     }
     public float Speed
     {
         get { return Speed; }
-        set { if (Speed < 0) Speed = 0; else Speed = value; }
+        private set { if (Speed < 0) Speed = 0; else Speed = value; }
     }
 
-    public Rigidbody2D playerRigid;
+    private Rigidbody2D playerRigid;
     public MovementJoystick movementJoystick;
     public ShootingJoystick shootingJoystick;
 
     public GameObject bullet; // For Prototype (temp variables)
     public GameObject bulletPivot; // For Prototype (temp variables)
 
-    [SerializeField]
-    private Sprite[] skins;
     [SerializeField]
     private GameObject[] colleages;
 
@@ -87,12 +85,24 @@ public abstract class Player : MonoBehaviour
     }
 
 
-    public void TakeDamage(int damage)
+    private void TakeDamage(int damage)
     {
         Hp -= damage;
         if(Hp <= 0)
         {
-            GameManager.GetInstance.GameOver();
+            GameManager.Instance.GameOver();
+        }
+    }
+
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("EnemyBullet"))
+        {
+            Bullet bullet = collision.gameObject.GetComponent<Bullet>();
+            TakeDamage(bullet.Damage);
+            AudioSource bulletAudio = bullet.GetComponent<AudioSource>();
+            bulletAudio.Play();
         }
     }
 }
