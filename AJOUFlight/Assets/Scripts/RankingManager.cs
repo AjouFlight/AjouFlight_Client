@@ -2,9 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class RankingManager : MonoBehaviour
 {
+    [SerializeField]
+    private Text[] userIDText;
+    [SerializeField]
+    private Text[] scoreText;
+
 
     public void GetDataFromServer()
     {

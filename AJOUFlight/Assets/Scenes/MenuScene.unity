@@ -1032,7 +1032,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Mars
+  m_Text: 'Stage 1
+
+    Mars'
 --- !u!222 &533192421
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1653,7 +1655,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Venus
+  m_Text: 'Stage 2
+
+    Venus'
 --- !u!222 &1228060963
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2773,7 +2777,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Jupiter
+  m_Text: 'Stage 3
+
+    Jupiter'
 --- !u!222 &1804430150
 CanvasRenderer:
   m_ObjectHideFlags: 0
