@@ -24,12 +24,19 @@ public class Henchman : Enemy
     }
 
 
+    protected override void OnDead()
+    {
+        base.OnDead();
+        Destroy(gameObject);
+    }
+
+
     IEnumerator Shoot()
     {
         while (true)
         {
+            GameObject bullet = Instantiate(enemyBullet, transform.position, transform.rotation);
             bullet.GetComponent<Bullet>().SetBullet(bulletSpeed, bulletDamage);
-            Instantiate(bullet, transform.position, transform.rotation);
             yield return new WaitForSeconds(0.5f);
         }
     }

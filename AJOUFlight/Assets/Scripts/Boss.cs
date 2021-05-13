@@ -23,9 +23,10 @@ public class Boss : Enemy
         // boss pattern.
     }
 
-
+    /* ToDo
     protected override void OnDead()
     {
         // When the boss dies ...
     }
+    */
 }

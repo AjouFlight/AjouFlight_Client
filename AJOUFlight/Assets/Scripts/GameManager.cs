@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour
+public class GameManager : MonoBehaviour 
 {
     private static GameManager instance;
 
@@ -17,45 +17,134 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    
-    public int score = 0;
-    public int stage = 1;
-    public bool isGameOver;
+    private int score;
+    private double money;
+    private int stage;
+    private bool isGameOver;
 
-    public GameObject[] enemies;
-    public GameObject[] players;
+    [SerializeField]
+    private GameObject[] enemies;
+    [SerializeField]
+    private GameObject[] players;
+    [SerializeField]
+    private MovementJoystick movementJoystick;
+    [SerializeField]
+    private ShootingJoystick shootingJoystick;
+    [SerializeField]
+    private Text finalScoreText;
+    [SerializeField]
+    private Text finalMoneyText;
+    [SerializeField]
+    private GameObject gameOverPanel;
 
-
-    // For prototype. there will be removed.
+    // For Test. there will be removed.
     public int type = 0;
     public Text scoreText;
     public Text hpText;
-    public Player player;
+
+    private GameObject player;
+    private List<Enemy> currentEnemies;
+
+
+    public int Score
+    {
+        get { return score; }
+        set { score = value; }
+    }
+    public double Money
+    {
+        get { return money; }
+        set { if (value > 0) money = value; else money = 0; }
+    }
+    public int Stage
+    {
+        get { return stage; }
+        set { if (stage > 0 && stage < 4) stage = value; else stage = 1; }
+    }
+
+    public bool IsGameOver
+    {
+        get { return isGameOver; }
+        set { isGameOver = value; }
+    }
+
+
+    void Awake()
+    {
+        InitPlayer();
+    }
 
 
     void Start()
     {
+        IsGameOver = false;
         StartCoroutine(playGameFlow());
     }
     
 
     void Update()
     {
-        scoreText.text = score.ToString();
-        hpText.text = player.Hp.ToString();
+        if (IsGameOver) return;
+
+        scoreText.text = "Score: " + score.ToString();
+    }
+
+
+    private void InitPlayer()
+    {
+        int flightIndex = PlayerInformation.selectedFlight;
+        player = Instantiate(players[flightIndex].gameObject, Vector3.zero, transform.rotation);
+        if (flightIndex == 0)
+        {
+            player.GetComponent<FlightA>().MoveJoystick = movementJoystick;
+            player.GetComponent<FlightA>().Shootjoystick = shootingJoystick;
+        }
+        else if (flightIndex == 1)
+        {
+            player.GetComponent<FlightB>().MoveJoystick = movementJoystick;
+            player.GetComponent<FlightB>().Shootjoystick = shootingJoystick;
+        }
+        else if (flightIndex == 2)
+        {
+            player.GetComponent<FlightC>().MoveJoystick = movementJoystick;
+            player.GetComponent<FlightC>().Shootjoystick = shootingJoystick;
+        }
+        else if (flightIndex == 3)
+        {
+            player.GetComponent<FlightD>().MoveJoystick = movementJoystick;
+            player.GetComponent<FlightD>().Shootjoystick = shootingJoystick;
+        }
+        else
+        {
+            Debug.Log("Invalid selected flight");
+        }
+        
     }
 
 
     public void AddScore(int score)
     {
-        this.score += score;
+        Score += score;
     }
 
 
     public void GameOver()
     {
-        // GameOver.
+        movementJoystick.gameObject.SetActive(false);
+        shootingJoystick.gameObject.SetActive(false);
+        scoreText.gameObject.SetActive(false);
+        IsGameOver = true;
+        gameOverPanel.SetActive(true);
+        finalMoneyText.text = "Score: " + Money.ToString();
+        finalScoreText.text = "Money: " + Score.ToString();
+
+
+
     }
+
+
+    
+
 
 
     public void GoNextStage()
@@ -68,19 +157,19 @@ public class GameManager : MonoBehaviour
     {
         while (true)
         {
-            // For prototype. It will be changed.
-            Instantiate(enemies[type], gameObject.transform.position, gameObject.transform.rotation);
+            if(IsGameOver) break;
+
+            Instantiate(enemies[type], gameObject.transform.position, new Quaternion(0,0,180, 0));
 
             yield return new WaitForSeconds(5.0f);
-
-            if (type < 2) type++;
-            else type = 0;
         }
     }
 
 
-
-
+    public void ReGame()
+    {
+        SceneManager.LoadScene("PlayScene");
+    }
 
 
     // For prototype. It will be removed.
@@ -88,4 +177,7 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.LoadScene("MenuScene");
     }
+
+    
+
 }

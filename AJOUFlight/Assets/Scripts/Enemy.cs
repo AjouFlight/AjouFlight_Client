@@ -10,12 +10,14 @@ public abstract class Enemy : MonoBehaviour
     private double moneyAmount;
     [SerializeField]
     private int scoreAmount;
+    [SerializeField]
+    private HealthBar healthBar;
 
-    public GameObject bullet;
+    public GameObject enemyBullet;
 
     void Start()
     {
-
+        healthBar.SetMaxHealth(hp);
     }
 
     void Update()
@@ -34,13 +36,18 @@ public abstract class Enemy : MonoBehaviour
     {
         hp -= damage;
         if (hp <= 0) OnDead();
+        Debug.Log(hp);
+        healthBar.SetHealth(hp);
     }
 
 
     protected virtual void OnDead()
     {
-        // When the enemy die ...
+        GameManager.Instance.AddScore(scoreAmount);
+        GameManager.Instance.Money += 10;
+        
     }
+
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
