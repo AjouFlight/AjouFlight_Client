@@ -15,4 +15,4 @@
 
 
 ## Using Packages
-- RESTful API (Will use. Not yet implement)
+- RESTful API

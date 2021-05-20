@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Proyecto26;
+using Models;
+
 
 public class GameManager : MonoBehaviour 
 {
@@ -55,6 +58,8 @@ public class GameManager : MonoBehaviour
 
     private GameObject player;
     private List<GameObject> currentEnemies = new List<GameObject>();
+
+    private const string basePath = "http://ec2-13-209-72-98.ap-northeast-2.compute.amazonaws.com";
 
 
     public int Score
@@ -142,12 +147,12 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
+        IsGameOver = true;
+
         Destroy(player.gameObject);
-        foreach (GameObject enemy in currentEnemies){
+        foreach (GameObject enemy in currentEnemies) {
             Destroy(enemy);
         }
-
-        IsGameOver = true;
 
         ShowEndPanel();
     }
@@ -155,7 +160,14 @@ public class GameManager : MonoBehaviour
 
     public void BossDead()
     {
-        GameOver();
+        PlayerInformation.clearedStage = PlayerInformation.currentStage;
+
+        Destroy(player.gameObject);
+        foreach (GameObject enemy in currentEnemies) {
+            Destroy(enemy);
+        }
+        
+        ShowEndPanel();
         endPanelText.text = "Clear Stage " + PlayerInformation.currentStage + " !";
         nextStageButton.SetActive(true);
     }
@@ -163,6 +175,7 @@ public class GameManager : MonoBehaviour
 
     public void ShowEndPanel()
     {
+        NoticeToServer();
         gameOverPanel.SetActive(true);
         movementJoystick.gameObject.SetActive(false);
         shootingJoystick.gameObject.SetActive(false);
@@ -175,6 +188,44 @@ public class GameManager : MonoBehaviour
     public void RemoveEnemy(GameObject o)
     {
         currentEnemies.Remove(o);
+    }
+
+
+    public void NoticeToServer()
+    {
+        StageUser updatedUser = new StageUser {
+            score = Score,
+            money = Money
+        };
+        
+        if (!IsGameOver) {
+            int cs = PlayerInformation.currentStage;
+            switch (cs)
+            {
+                case 3:
+                    updatedUser.stage3 = true;
+                    updatedUser.stage2 = true;
+                    updatedUser.stage1 = true;
+                    break;
+                case 2:
+                    updatedUser.stage2 = true;
+                    updatedUser.stage1 = true;
+                    break;
+                case 1:
+                    updatedUser.stage1 = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+
+        RestClient.Put<ServerResponse>(basePath + "/user", updatedUser).Then(customResponse => {
+            //UnityEditor.EditorUtility.DisplayDialog("JSON", JsonUtility.ToJson(customResponse, true), "Ok");
+        }).Catch(err =>
+        {
+            //UnityEditor.EditorUtility.DisplayDialog("error", err.Message, "Ok");
+        });
     }
 
 
