@@ -24,7 +24,7 @@ public class Bullet : MonoBehaviour, IBullet
 
     void Awake()
     {
-        Destroy(this, 7.0f);
+        Destroy(gameObject, 7.0f);
         bulletRigid = GetComponent<Rigidbody2D>();
     }
 

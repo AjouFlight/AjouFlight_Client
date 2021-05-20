@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject[] players;
     [SerializeField]
+    private GameObject[] bosses;
+    [SerializeField]
     private MovementJoystick movementJoystick;
     [SerializeField]
     private ShootingJoystick shootingJoystick;
@@ -37,13 +39,22 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject gameOverPanel;
 
+    [SerializeField]
+    private Canvas bossHpCanvas;
+    [SerializeField]
+    private Text endPanelText;
+    [SerializeField]
+    private GameObject nextStageButton;
+
+
     // For Test. there will be removed.
     public int type = 0;
     public Text scoreText;
     public Text hpText;
+    public bool bossTime;
 
     private GameObject player;
-    private List<Enemy> currentEnemies;
+    private List<GameObject> currentEnemies = new List<GameObject>();
 
 
     public int Score
@@ -77,8 +88,11 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        bossTime = false;
         IsGameOver = false;
-        StartCoroutine(playGameFlow());
+
+        StartCoroutine(PlayBossFlow());
+        StartCoroutine(PlayGameFlow());
     }
     
 
@@ -94,31 +108,29 @@ public class GameManager : MonoBehaviour
     {
         int flightIndex = PlayerInformation.selectedFlight;
         player = Instantiate(players[flightIndex].gameObject, Vector3.zero, transform.rotation);
-        if (flightIndex == 0)
+
+        switch (flightIndex)
         {
-            player.GetComponent<FlightA>().MoveJoystick = movementJoystick;
-            player.GetComponent<FlightA>().Shootjoystick = shootingJoystick;
+            case 0:
+                player.GetComponent<FlightA>().MoveJoystick = movementJoystick;
+                player.GetComponent<FlightA>().Shootjoystick = shootingJoystick;
+                break;
+            case 1:
+                player.GetComponent<FlightB>().MoveJoystick = movementJoystick;
+                player.GetComponent<FlightB>().Shootjoystick = shootingJoystick;
+                break;
+            case 2:
+                player.GetComponent<FlightC>().MoveJoystick = movementJoystick;
+                player.GetComponent<FlightC>().Shootjoystick = shootingJoystick;
+                break;
+            case 3:
+                player.GetComponent<FlightD>().MoveJoystick = movementJoystick;
+                player.GetComponent<FlightD>().Shootjoystick = shootingJoystick;
+                break;
+            default:
+                Debug.Log("Invalid selected flight");
+                break;
         }
-        else if (flightIndex == 1)
-        {
-            player.GetComponent<FlightB>().MoveJoystick = movementJoystick;
-            player.GetComponent<FlightB>().Shootjoystick = shootingJoystick;
-        }
-        else if (flightIndex == 2)
-        {
-            player.GetComponent<FlightC>().MoveJoystick = movementJoystick;
-            player.GetComponent<FlightC>().Shootjoystick = shootingJoystick;
-        }
-        else if (flightIndex == 3)
-        {
-            player.GetComponent<FlightD>().MoveJoystick = movementJoystick;
-            player.GetComponent<FlightD>().Shootjoystick = shootingJoystick;
-        }
-        else
-        {
-            Debug.Log("Invalid selected flight");
-        }
-        
     }
 
 
@@ -130,21 +142,40 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
-        movementJoystick.gameObject.SetActive(false);
-        shootingJoystick.gameObject.SetActive(false);
-        scoreText.gameObject.SetActive(false);
+        Destroy(player.gameObject);
+        foreach (GameObject enemy in currentEnemies){
+            Destroy(enemy);
+        }
+
         IsGameOver = true;
-        gameOverPanel.SetActive(true);
-        finalMoneyText.text = "Score: " + Money.ToString();
-        finalScoreText.text = "Money: " + Score.ToString();
 
-
-
+        ShowEndPanel();
     }
 
 
-    
+    public void BossDead()
+    {
+        GameOver();
+        endPanelText.text = "Clear Stage " + PlayerInformation.currentStage + " !";
+        nextStageButton.SetActive(true);
+    }
 
+
+    public void ShowEndPanel()
+    {
+        gameOverPanel.SetActive(true);
+        movementJoystick.gameObject.SetActive(false);
+        shootingJoystick.gameObject.SetActive(false);
+        scoreText.gameObject.SetActive(false);
+        finalMoneyText.text = "Score: " + Money.ToString();
+        finalScoreText.text = "Money: " + Score.ToString();
+    }
+
+
+    public void RemoveEnemy(GameObject o)
+    {
+        currentEnemies.Remove(o);
+    }
 
 
     public void GoNextStage()
@@ -153,16 +184,39 @@ public class GameManager : MonoBehaviour
     }
 
 
-    IEnumerator playGameFlow()
+    IEnumerator PlayBossFlow()
+    {
+        yield return new WaitForSeconds(10.0f);
+        bossTime = true;
+
+        bossHpCanvas.gameObject.SetActive(true);
+        Instantiate(bosses[type], new Vector3(0, 2.85f, 0), new Quaternion(0, 0, 180, 0));
+
+    }
+
+    IEnumerator PlayGameFlow()
     {
         while (true)
         {
-            if(IsGameOver) break;
+            if(IsGameOver || bossTime) break;
 
-            Instantiate(enemies[type], gameObject.transform.position, new Quaternion(0,0,180, 0));
+            for(int i=0; i< 5; i++)
+            {
+                GameObject currentEnemy = Instantiate(enemies[type], 
+                    gameObject.transform.position, new Quaternion(0, 0, 180, 0));
+                currentEnemies.Add(currentEnemy);
 
+                yield return new WaitForSeconds(0.1f);
+            }
             yield return new WaitForSeconds(5.0f);
         }
+    }
+
+
+    public void NextGame()
+    {
+        // next scene...
+        SceneManager.LoadScene("PlayScene");
     }
 
 
