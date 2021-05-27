@@ -93,6 +93,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        type = PlayerInformation.currentStage - 1;
         bossTime = false;
         IsGameOver = false;
 
@@ -147,6 +148,7 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
+        AudioManager.Instance.PlayPlayerDeathClip();
         IsGameOver = true;
 
         Destroy(player.gameObject);
@@ -160,6 +162,7 @@ public class GameManager : MonoBehaviour
 
     public void BossDead()
     {
+        AudioManager.Instance.PlayWinClip();
         PlayerInformation.clearedStage = PlayerInformation.currentStage;
 
         Destroy(player.gameObject);
@@ -168,8 +171,16 @@ public class GameManager : MonoBehaviour
         }
         
         ShowEndPanel();
-        endPanelText.text = "Clear Stage " + PlayerInformation.currentStage + " !";
-        nextStageButton.SetActive(true);
+        if (PlayerInformation.clearedStage == 3 && PlayerInformation.currentStage == 3) {
+            endPanelText.text = "All Stage Clear !";
+        }
+        else {
+            endPanelText.text = "Clear Stage " + PlayerInformation.currentStage + " !";
+        }
+        
+        if(PlayerInformation.currentStage < 3){
+            nextStageButton.SetActive(true);
+        }
     }
 
 
@@ -229,20 +240,14 @@ public class GameManager : MonoBehaviour
     }
 
 
-    public void GoNextStage()
-    {
-        // Go Next Stage.
-    }
-
-
     IEnumerator PlayBossFlow()
     {
-        yield return new WaitForSeconds(10.0f);
+        yield return new WaitForSeconds(15.0f);
         bossTime = true;
-
+        
         bossHpCanvas.gameObject.SetActive(true);
-        Instantiate(bosses[type], new Vector3(0, 2.85f, 0), new Quaternion(0, 0, 180, 0));
-
+        GameObject boss = Instantiate(bosses[type], new Vector3(0, 2.85f, 0), new Quaternion(0, 0, 180, 0));
+        
     }
 
     IEnumerator PlayGameFlow()
@@ -250,13 +255,13 @@ public class GameManager : MonoBehaviour
         while (true)
         {
             if(IsGameOver || bossTime) break;
-
-            for(int i=0; i< 5; i++)
+            int num = 5;
+            for(int i=0; i< num; i++)
             {
                 GameObject currentEnemy = Instantiate(enemies[type], 
                     gameObject.transform.position, new Quaternion(0, 0, 180, 0));
                 currentEnemies.Add(currentEnemy);
-
+                
                 yield return new WaitForSeconds(0.1f);
             }
             yield return new WaitForSeconds(5.0f);
@@ -266,7 +271,7 @@ public class GameManager : MonoBehaviour
 
     public void NextGame()
     {
-        // next scene...
+        PlayerInformation.currentStage += 1;
         SceneManager.LoadScene("PlayScene");
     }
 
