@@ -2,7 +2,7 @@
 
 ## Client Developers
 - InYong Shin
-- MEIJU
+- MB
 
 
 ## Major Functions
