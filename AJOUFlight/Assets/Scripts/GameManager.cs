@@ -242,7 +242,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator PlayBossFlow()
     {
-        yield return new WaitForSeconds(15.0f);
+        yield return new WaitForSeconds(10.0f);
         bossTime = true;
         
         bossHpCanvas.gameObject.SetActive(true);
