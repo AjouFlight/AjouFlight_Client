@@ -249,6 +249,27 @@ MonoBehaviour:
   finalScoreText: {fileID: 1115252074}
   finalMoneyText: {fileID: 825890732}
   gameOverPanel: {fileID: 1597110360}
+  skins:
+  - {fileID: 5808706599956789427, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: -6265523600114377413, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: -1127446339793449204, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: -7512465321725650846, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: -7426053514361112426, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: -5027169101572906579, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: 5318732219405051258, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: -5667719936926509693, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: 6650615803220150359, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: -3943772297045510921, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: 7695830788053072561, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: 7074316404030334728, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: 2767476173853255024, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: -2121129162872234188, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: -5983676207973704200, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: -4448971732028405027, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: 1708615573438948199, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: 2011091640017050836, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: 6523715942493299101, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
+  - {fileID: 259162685832817162, guid: b0e4f7a64898cc64f8f4cb61d7700c17, type: 3}
   bossHpCanvas: {fileID: 1361909018}
   endPanelText: {fileID: 283540707}
   nextStageButton: {fileID: 810766944}

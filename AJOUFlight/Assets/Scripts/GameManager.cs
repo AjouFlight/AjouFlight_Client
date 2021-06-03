@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Proyecto26;
 using Models;
-
+using UnityEditor;
 
 public class GameManager : MonoBehaviour 
 {
@@ -41,6 +41,8 @@ public class GameManager : MonoBehaviour
     private Text finalMoneyText;
     [SerializeField]
     private GameObject gameOverPanel;
+    [SerializeField]
+    private Sprite[] skins;
 
     [SerializeField]
     private Canvas bossHpCanvas;
@@ -59,7 +61,8 @@ public class GameManager : MonoBehaviour
     private GameObject player;
     private List<GameObject> currentEnemies = new List<GameObject>();
 
-    private const string basePath = "http://ec2-13-209-72-98.ap-northeast-2.compute.amazonaws.com";
+    private RequestHelper currentRequest;
+    private const string basePath = "http://ec2-3-36-132-39.ap-northeast-2.compute.amazonaws.com";
 
 
     public int Score
@@ -113,7 +116,11 @@ public class GameManager : MonoBehaviour
     private void InitPlayer()
     {
         int flightIndex = PlayerInformation.selectedFlight;
+        int skinIndex = PlayerInformation.selectedSkin;
         player = Instantiate(players[flightIndex].gameObject, Vector3.zero, transform.rotation);
+        if(skinIndex != -1) {
+            player.GetComponent<SpriteRenderer>().sprite = skins[skinIndex];
+        }
 
         switch (flightIndex)
         {
@@ -145,6 +152,11 @@ public class GameManager : MonoBehaviour
         Score += score;
     }
 
+    public void AddGameMoney(double money)
+    {
+        Money += money;
+    }
+
 
     public void GameOver()
     {
@@ -162,8 +174,14 @@ public class GameManager : MonoBehaviour
 
     public void BossDead()
     {
+        int clearedStage = PlayerInformation.clearedStage;
+        int currentStage = PlayerInformation.currentStage;
+        if (clearedStage < currentStage) {
+            PlayerInformation.clearedStage = PlayerInformation.currentStage;
+            clearedStage = currentStage;
+        }
+
         AudioManager.Instance.PlayWinClip();
-        PlayerInformation.clearedStage = PlayerInformation.currentStage;
 
         Destroy(player.gameObject);
         foreach (GameObject enemy in currentEnemies) {
@@ -171,14 +189,15 @@ public class GameManager : MonoBehaviour
         }
         
         ShowEndPanel();
-        if (PlayerInformation.clearedStage == 3 && PlayerInformation.currentStage == 3) {
+
+        if (clearedStage == 3 && currentStage == 3) {
             endPanelText.text = "All Stage Clear !";
         }
         else {
-            endPanelText.text = "Clear Stage " + PlayerInformation.currentStage + " !";
+            endPanelText.text = "Clear Stage " + currentStage + " !";
         }
         
-        if(PlayerInformation.currentStage < 3){
+        if(currentStage < 3){
             nextStageButton.SetActive(true);
         }
     }
@@ -191,8 +210,11 @@ public class GameManager : MonoBehaviour
         movementJoystick.gameObject.SetActive(false);
         shootingJoystick.gameObject.SetActive(false);
         scoreText.gameObject.SetActive(false);
-        finalMoneyText.text = "Score: " + Money.ToString();
-        finalScoreText.text = "Money: " + Score.ToString();
+        finalScoreText.text = "Score: " + Score.ToString();
+        finalMoneyText.text = "Money: " + Money.ToString();
+
+        PlayerInformation.money += Money;
+        PlayerInformation.score += Score;
     }
 
 
@@ -204,38 +226,51 @@ public class GameManager : MonoBehaviour
 
     public void NoticeToServer()
     {
-        StageUser updatedUser = new StageUser {
-            score = Score,
-            money = Money
-        };
-        
+        int updatedStage = 0;
         if (!IsGameOver) {
             int cs = PlayerInformation.currentStage;
-            switch (cs)
-            {
+            int cleardMaxStage = PlayerInformation.clearedStage;
+            switch (cs) {
                 case 3:
-                    updatedUser.stage3 = true;
-                    updatedUser.stage2 = true;
-                    updatedUser.stage1 = true;
+                    updatedStage = 3;
                     break;
                 case 2:
-                    updatedUser.stage2 = true;
-                    updatedUser.stage1 = true;
+                    if (cleardMaxStage < 2) updatedStage = 2;
                     break;
                 case 1:
-                    updatedUser.stage1 = true;
+                    if (cleardMaxStage < 1) updatedStage = 1;
                     break;
                 default:
                     break;
             }
         }
 
+        StageUser updatedUser = new StageUser{
+            score = Score,
+            money = PlayerInformation.money,
+            stage = updatedStage
+        };
 
-        RestClient.Put<ServerResponse>(basePath + "/user", updatedUser).Then(customResponse => {
-            //UnityEditor.EditorUtility.DisplayDialog("JSON", JsonUtility.ToJson(customResponse, true), "Ok");
-        }).Catch(err =>
+        string jwt_token = PlayerInformation.token;
+        currentRequest = new RequestHelper
         {
-            //UnityEditor.EditorUtility.DisplayDialog("error", err.Message, "Ok");
+            Uri = basePath + "/user",
+            Headers = new Dictionary<string, string> {
+                { "Authorization", "Bearer " + jwt_token }
+            },
+            Body = updatedUser,
+            ContentType = "application/json",
+            EnableDebug = true
+        };
+        RestClient.Put<ServerResponse>(currentRequest)
+        .Then(res => {
+            Debug.Log("Success Put!");
+            EditorUtility.DisplayDialog("Success", JsonUtility.ToJson(res, true), "Ok");
+        })
+        .Catch(err =>
+        {
+            Debug.Log(err.ToString());
+            EditorUtility.DisplayDialog("error", err.Message, "Ok");
         });
     }
 
@@ -282,7 +317,6 @@ public class GameManager : MonoBehaviour
     }
 
 
-    // For prototype. It will be removed.
     public void OnClickBack()
     {
         SceneManager.LoadScene("MenuScene");
