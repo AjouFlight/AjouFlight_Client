@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Models;
+using Proyecto26;
 
 
 public class RoomManager : MonoBehaviour
@@ -25,23 +27,54 @@ public class RoomManager : MonoBehaviour
     private int selectedFlight=0;
     private int selectedSkin=0;
     private int skinNum=0;
-    private int numPlayers=10;
-    private float percentage = 0.0f;
+
+    private RequestHelper currentRequest;
+    private const string basePath = "http://ec2-3-36-132-39.ap-northeast-2.compute.amazonaws.com";
 
 
     void Start()
     {
         skinNum = 5;
+        selectedFlight = PlayerInformation.selectedFlight;
+        selectedSkin = PlayerInformation.selectedSkin;
+
         InitStore();
         UpdateView();
     }
 
 
-    private void GetInformationFromServer()
+    private void PutInformationToServer()
     {
-        // 서버로부터 받아야 하는 변수
-        // numPlayers, Ranking
-        
+        StageUser updatedUser = new StageUser
+        {
+            score = 0,
+            money = 0,
+            stage = PlayerInformation.clearedStage,
+            skin = selectedSkin
+        };
+
+        string jwt_token = PlayerInformation.token;
+        currentRequest = new RequestHelper
+        {
+            Uri = basePath + "/user",
+            Headers = new Dictionary<string, string> {
+                { "Authorization", "Bearer " + jwt_token }
+            },
+            Body = updatedUser,
+            ContentType = "application/json",
+            EnableDebug = true
+        };
+        RestClient.Put<ServerResponse>(currentRequest)
+        .Then(res => {
+            Debug.Log("Success Put!");
+            //EditorUtility.DisplayDialog("Success", JsonUtility.ToJson(res, true), "Ok");
+        })
+        .Catch(err =>
+        {
+            Debug.Log(err.ToString());
+            // EditorUtility.DisplayDialog("error", err.Message, "Ok");
+        });
+
     }
 
 
@@ -52,11 +85,10 @@ public class RoomManager : MonoBehaviour
         selectedFlight = PlayerInformation.selectedFlight;
         selectedSkin = PlayerInformation.selectedSkin;
 
-        percentage = ((float)ranking / numPlayers) * 100;
         int numFlights = ableFlight.Length;
 
         // Show the player's ranking percentage with text.
-        rankingText.text = percentage.ToString() + " %";
+        rankingText.text = ranking.ToString() + " %";
 
         // Check if the player has flights.
         // Check the player's ranking so that can select skins.
@@ -70,7 +102,7 @@ public class RoomManager : MonoBehaviour
                 }
             }
             else {
-                int maxSkin = (int)percentage/(skinNum * numFlights);
+                int maxSkin = ranking / (skinNum * numFlights);
                 for (int j=0; j< maxSkin; j++) {
                     flightSkinImages[skinNum*i+(skinNum-1-j)].color = Color.black;
                     flightSkinButton[skinNum*i+(skinNum-1-j)].interactable = false;
@@ -101,6 +133,7 @@ public class RoomManager : MonoBehaviour
     {
         selectedSkin = skinIndex;
         selectedFlight = skinIndex / skinNum;
+        PutInformationToServer();
         UpdateView();
     }
 

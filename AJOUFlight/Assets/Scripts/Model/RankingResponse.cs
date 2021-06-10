@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Models
 {
@@ -7,7 +8,7 @@ namespace Models
 	{
 		public int code;
 		public string message;
-		public RankingUser[] data;
+		public RankingData data;
 
 		public override string ToString()
 		{

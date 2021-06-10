@@ -8,6 +8,7 @@ namespace Models
 		public int score;
 		public double money;
 		public int stage;
+		public int skin;
 
 		public override string ToString()
 		{

@@ -1,14 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using Proyecto26;
 using UnityEditor;
 using Models;
-using System.Net;
-using System.IO;
-
 
 public class AccountManager : MonoBehaviour 
 {
@@ -37,7 +32,10 @@ public class AccountManager : MonoBehaviour
 
     private RequestHelper currentRequest;
 
+    // YoungWoo's server
     // private const string basePath = "http://ec2-13-209-72-98.ap-northeast-2.compute.amazonaws.com";
+
+    // JinSeok's server
     private const string basePath = "http://ec2-3-36-132-39.ap-northeast-2.compute.amazonaws.com";
 
 
@@ -57,141 +55,55 @@ public class AccountManager : MonoBehaviour
             return;
         }
 
-
-        var httpWebRequest = (HttpWebRequest)WebRequest.Create(basePath + "/login");
-        httpWebRequest.ContentType = "application/json";
-        httpWebRequest.Method = "POST";
-
-        using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-        {
-            string json = 
-                "{\"userId\":\"" + idText + "\"," +
-                 "\"password\":\"" + passwordText + "\"}";
-            
-            streamWriter.Write(json);
-        }
-
-        try
-        {
-            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-            {
-                var result = streamReader.ReadToEnd();
-                Debug.Log(result);
-
-                string tmp = "";
-                int index = result.IndexOf("token");
-                for (int i = 8; i < 200; i++)
-                {
-                    if (result[index + i + 1] == ',') {
-                        break;
-                    }
-                    tmp += result[index + i];
-                }
-                PlayerInformation.token = tmp;
-                tmp = "";
-
-                index = result.IndexOf("stage");
-                int stageNum = result[index + 7] - '0';
-                PlayerInformation.clearedStage = stageNum - 1;
-
-                index = result.IndexOf("score");
-                for (int i = 7; i < 20; i++)
-                {
-                    if (result[index + i] == ',') break;
-                    tmp += result[index + i];
-                }
-                PlayerInformation.score = int.Parse(tmp);
-                tmp = "";
-
-                index = result.IndexOf("money");
-                for (int i = 7; i < 20; i++)
-                {
-                    if (result[index + i] == ',') break;
-                    tmp += result[index + i];
-                }
-                PlayerInformation.money = int.Parse(tmp);
-                Debug.Log(tmp);
-                tmp = "";
-
-                index = result.IndexOf("flights");
-                for (int i = 10; i < 200; i++)
-                {
-                    if (result[index + i] == ']') break;
-                    tmp += result[index + i];
-                }
-
-                if (tmp.Length > 0)
-                {
-                    string[] words = tmp.Split(',');
-                    foreach (string word in words)
-                    {
-                        int i = word.IndexOf(":");
-                        int flightID = word[i+1] - '0';
-                        PlayerInformation.canSelectFlight[flightID] = 1;
-                    }
-                }
-                else
-                {
-                    PlayerInformation.canSelectFlight[0] = 1;
-                }
-
-                PlayerInformation.playerID = idText;
-                SceneManager.LoadScene("MenuScene");
-            }
-        } catch (WebException e)
-        {
-            Debug.Log(e.ToString());
-            loginText.text = "Invalid account.";
-        }
         
-        
-        /*
-        User newUser = new User
+        User user = new User
         {
             userId = idText,
             password = passwordText
         };
 
-
-        // case 1. Using the generic request method.
         currentRequest = new RequestHelper
         {
             Uri = basePath + "/login",
-            Body = newUser,
+            Body = user,
             ContentType = "application/json",
             EnableDebug = true
         };
-        RestClient.Post<ServerResponse>(currentRequest)
+        RestClient.Post<MenuResponse>(currentRequest)
         .Then(res =>
         {
-            loginText.text = "Welcome\n" + newUser.userId;
-            PlayerInformation.playerID = newUser.userId;
-            //PlayerInformation.token = res.token;
-
             Debug.Log(res.ToString());
 
-            EditorUtility.DisplayDialog("Success", JsonUtility.ToJson(res, true), "Ok");
+            loginText.text = "Welcome\n" + user.userId;
+            
+            PlayerInformation.playerID = user.userId;
+            PlayerInformation.token = res.data.token;
+            PlayerInformation.clearedStage = res.data.stage - 1;
+            PlayerInformation.score = res.data.score;
+            PlayerInformation.money = res.data.money;
+            PlayerInformation.selectedSkin = res.data.skin;
+
+            for(int i=0; i<res.data.flights.Length; i++)
+            {
+                int index = res.data.flights[i];
+                PlayerInformation.canSelectFlight[index] = 1;
+            }
+
+            int skinIndex = PlayerInformation.selectedSkin;
+            if(skinIndex >= 0) {
+                PlayerInformation.selectedFlight = skinIndex / 5;
+            }
+
+            // EditorUtility.DisplayDialog("Success", JsonUtility.ToJson(res, true), "Ok");
             SceneManager.LoadScene("MenuScene");
         })
         .Catch(err =>
         {
-            loginText.text = "No Valid Account.";
-            EditorUtility.DisplayDialog("error", err.Message, "Ok");
+            loginText.text = "Invalid Account.";
+            Debug.Log(err.ToString());
+            // EditorUtility.DisplayDialog("error", err.Message, "Ok");
         });
-        */
-
-        // case 2. Using the short request method (ToDoList: select the case 1 or 2)
-        /*
-        RestClient.Post<ServerResponse>(basePath + "/login", newUser).Then(response =>
-        {
-            EditorUtility.DisplayDialog("token: ", response.token, "Ok");
-            EditorUtility.DisplayDialog("Message: ", response.message, "Ok");
-        }).Catch(err => EditorUtility.DisplayDialog("error", err.Message, "Ok"));
-        */
-
     }
-
 
 
     public void OnClickSignUpOK()
@@ -252,7 +164,6 @@ public class AccountManager : MonoBehaviour
     {
         signInCanvas.gameObject.SetActive(false);
         signUpCanvas.gameObject.SetActive(true);
-
     }
 
     public void OnClickSignUp2SignIn()

@@ -226,10 +226,11 @@ public class GameManager : MonoBehaviour
 
     public void NoticeToServer()
     {
-        int updatedStage = 0;
+        int updatedStage = PlayerInformation.clearedStage;
         if (!IsGameOver) {
             int cs = PlayerInformation.currentStage;
             int cleardMaxStage = PlayerInformation.clearedStage;
+
             switch (cs) {
                 case 3:
                     updatedStage = 3;
@@ -245,10 +246,13 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        StageUser updatedUser = new StageUser{
+        Debug.Log(updatedStage);
+
+        StageUser updatedUser = new StageUser {
             score = Score,
-            money = PlayerInformation.money,
-            stage = updatedStage
+            money = Money,
+            stage = updatedStage,
+            skin = PlayerInformation.selectedSkin
         };
 
         string jwt_token = PlayerInformation.token;
@@ -265,12 +269,11 @@ public class GameManager : MonoBehaviour
         RestClient.Put<ServerResponse>(currentRequest)
         .Then(res => {
             Debug.Log("Success Put!");
-            EditorUtility.DisplayDialog("Success", JsonUtility.ToJson(res, true), "Ok");
+            //EditorUtility.DisplayDialog("Success", JsonUtility.ToJson(res, true), "Ok");
         })
-        .Catch(err =>
-        {
+        .Catch(err => {
             Debug.Log(err.ToString());
-            EditorUtility.DisplayDialog("error", err.Message, "Ok");
+            // EditorUtility.DisplayDialog("error", err.Message, "Ok");
         });
     }
 
@@ -321,7 +324,5 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.LoadScene("MenuScene");
     }
-
-    
 
 }

@@ -1,15 +1,15 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using System;
 
 namespace Models
 {
-    [SerializeField]
+    [Serializable]
     public class Data
     {
         public string token;
         public int stage;
         public int score;
         public double money;
+        public int skin;
         public int[] flights;
 
         public override string ToString()

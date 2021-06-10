@@ -17,7 +17,7 @@ public class StoreManager : MonoBehaviour
     private Text storeText;
 
     private double gameMoney;
-    private int[] canSelectFlights;
+    private int[] canSelectFlights = {0, 0, 0, 0};
 
     private RequestHelper currentRequest;
     private const string basePath = "http://ec2-3-36-132-39.ap-northeast-2.compute.amazonaws.com";
@@ -37,21 +37,25 @@ public class StoreManager : MonoBehaviour
         moneyText.text = gameMoney.ToString();
 
         for (int i=1; i<canSelectFlights.Length; i++) {
-            if (canSelectFlights[i] == 1)
+            if(canSelectFlights[i] == 1) {
                 flightButtons[i-1].interactable = false;
+            }
         }
     }
 
 
     public void Purchase(int flightIndex) // 1,2,3
     {
-        if((flightIndex+1)*100 <= gameMoney) {
-            gameMoney -= (flightIndex + 1) * 100;
+        double price = (flightIndex+1)*100;
+        
+        if (price <= gameMoney) {
+            gameMoney -= price;
             canSelectFlights[flightIndex] = 1;
             flightButtons[flightIndex-1].interactable = false;
             storeText.text = "Purchase the Flight" + (flightIndex+1).ToString() + " !";
             moneyText.text = gameMoney.ToString();
-            PostFlightsForServer(flightIndex, gameMoney);
+
+            PostFlightsToServer(flightIndex, price);
             UpdatePlayerInformation();
         }
         else {
@@ -60,14 +64,14 @@ public class StoreManager : MonoBehaviour
     }
 
 
-    private void PostFlightsForServer(int id, double m)
+    private void PostFlightsToServer(int id, double m)
     {
         string jwt_token = PlayerInformation.token;
 
         StoreFlight newFlight = new StoreFlight
         {
             flightId = id,
-            money = gameMoney - m
+            money = m
         };
 
         currentRequest = new RequestHelper

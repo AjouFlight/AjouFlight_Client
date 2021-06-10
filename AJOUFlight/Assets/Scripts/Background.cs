@@ -7,8 +7,6 @@ public class Background : MonoBehaviour
     [SerializeField]
     private Sprite[] backgroundSprites;
 
-    private SpriteRenderer backgroundSpriteRenderer;
-
     private int backgroundSpriteNum = 4;
 
 
@@ -17,11 +15,6 @@ public class Background : MonoBehaviour
         backgroundSpriteNum = 4;
         InitSetSpriteBackground();
         StartCoroutine(ScrollBackground());
-    }
-
-    void Update()
-    {
-        
     }
     
     private void InitSetSpriteBackground()

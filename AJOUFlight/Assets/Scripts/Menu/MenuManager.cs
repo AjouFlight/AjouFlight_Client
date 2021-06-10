@@ -1,10 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Models;
+using UnityEngine.Audio;
+using System.Collections.Generic;
 using Proyecto26;
+using Models;
 using UnityEditor;
 
 public class MenuManager : MonoBehaviour
@@ -17,37 +17,86 @@ public class MenuManager : MonoBehaviour
     private GameObject outsideButton;
     [SerializeField]
     private Text welcomeText;
+    [SerializeField]
+    private GameObject audioPanel;
 
+    [SerializeField]
+    private AudioMixer myMixer;
+    [SerializeField]
+    private Slider BGMSlider;
+    [SerializeField]
+    private Slider SFXSlider;
 
+    private int totalUserNum;
+    private int myRanking;
+
+    private RequestHelper currentRequest;
     private const string basePath = "http://ec2-3-36-132-39.ap-northeast-2.compute.amazonaws.com";
+
 
     void Start()
     {
         welcomeText.text = "Welcome " + PlayerInformation.playerID + "!" ;
-        
+        GetRankingDataFromServer();
+    }
+
+    void Update()
+    {
+        AudioControl();
     }
 
 
-    private void InitPlayer()
+    private void GetRankingDataFromServer()
     {
-        string token = PlayerInformation.token;
+        string jwt_token = PlayerInformation.token;
 
-        RestClient.Get<MenuResponse>(basePath + "/user/" + token).Then(user =>
+        currentRequest = new RequestHelper
         {
-            PlayerInformation.score = user.data.score;
-            PlayerInformation.canSelectFlight = user.data.flights;
-            PlayerInformation.money = user.data.money;
+            Uri = basePath + "/user/ranking",
+            Headers = new Dictionary<string, string> {
+                { "Authorization", "Bearer " + jwt_token }
+            },
+            ContentType = "application/json",
+            EnableDebug = true
+        };
+        RestClient.Get<RankingResponse>(currentRequest).Then(tenUsers =>
+        {
+            List<Dictionary<string, int>> tmpTen = new List<Dictionary<string, int>>();
 
-            if (user.data.stage == 3) PlayerInformation.clearedStage = 3;
-            else if (user.data.stage == 2) PlayerInformation.clearedStage = 2;
-            else if (user.data.stage == 1) PlayerInformation.clearedStage = 1;
-            else PlayerInformation.clearedStage = 0;
+            foreach (RankingUser ru in tenUsers.data.top10)
+            {
+                Dictionary<string, int> d = new Dictionary<string, int>();
+                string uId = ru.userId;
+                int uScore = ru.score;
+                d[uId] = uScore;
+                tmpTen.Add(d);
+            }
 
+            PlayerInformation.tenUserlist = tmpTen;
+
+            totalUserNum = tenUsers.data.totalNum;
+            myRanking = tenUsers.data.myRanking;
+            if (PlayerInformation.score == 0) {
+                PlayerInformation.ranking = 100;
+            }
+            else {
+                PlayerInformation.ranking = (int)(((float)myRanking / totalUserNum) * 100);
+            }
+            
         }).Catch(error => {
-            Debug.Log("fail init Player!");
-            EditorUtility.DisplayDialog("Error", error.Message, "Ok");
+            Debug.Log(error.ToString());
+            // EditorUtility.DisplayDialog("Error", error.Message, "Ok");
         });
+    }
 
+
+    private void AudioControl()
+    {
+        float BGMVolume = BGMSlider.value;
+        float SFXVolume = SFXSlider.value;
+
+        myMixer.SetFloat("BGM", BGMVolume);
+        myMixer.SetFloat("SFX", SFXVolume);
     }
 
 
@@ -73,6 +122,27 @@ public class MenuManager : MonoBehaviour
             stageButtons[i].interactable = true;
         }
     }
+
+    public void HidePanels()
+    {
+        stagePanel.SetActive(false);
+        audioPanel.SetActive(false);
+        outsideButton.SetActive(false);
+    }
+
+
+    public void HideAudioPanel()
+    {
+        audioPanel.SetActive(false);
+        outsideButton.SetActive(false);
+    }
+
+    public void ShowAudioPanel()
+    {
+        audioPanel.SetActive(true);
+        outsideButton.SetActive(true);
+    }
+
 
     public void SelectStage(int stageIndex)
     {
