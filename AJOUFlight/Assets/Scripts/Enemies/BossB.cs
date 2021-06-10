@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class BossB : Enemy
+﻿public class BossB : Enemy
 {
     private readonly int startHp = 400;
     private readonly int score = 100;
@@ -17,6 +13,12 @@ public class BossB : Enemy
         SetShoots(bossBShoot);
     }
 
+    /********************************************
+    * Function : OnDead()
+    * descrition : 
+    *  - When the boss is died, add score and money.
+    *  - Call BossDead method for showing result panel.
+    ********************************************/
     protected override void OnDead()
     {
         GameManager.Instance.AddScore(ScoreAmount);

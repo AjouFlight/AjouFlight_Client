@@ -1,11 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class FlightD : Player
+﻿public class FlightD : Player
 {
     void Awake()
     {
+        // Set the shoot type
         PowerAShoot powerAShoot = gameObject.AddComponent<PowerAShoot>();
         SetShoots(powerAShoot);
     }

@@ -5,7 +5,7 @@ using UnityEngine;
 public class PowerAShoot : Shoot
 {
     private readonly float startSpeed = 6f;
-    private readonly int startAttackDamage = 100;
+    private readonly int startAttackDamage = 10;
     private readonly float shootTime = 0.2f;
 
     public override void Shoots()

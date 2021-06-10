@@ -20,10 +20,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private int score;
-    private double money;
-    private int stage;
-    private bool isGameOver;
+    private int score = 0;
+    private double money = 0;
+    private int stage = 0;
+    private int type = 0;
+    private bool isGameOver = false;
+    private bool bossTime = false;
 
     [SerializeField]
     private GameObject[] enemies;
@@ -31,6 +33,8 @@ public class GameManager : MonoBehaviour
     private GameObject[] players;
     [SerializeField]
     private GameObject[] bosses;
+    [SerializeField]
+    private Sprite[] skins;
     [SerializeField]
     private MovementJoystick movementJoystick;
     [SerializeField]
@@ -41,8 +45,6 @@ public class GameManager : MonoBehaviour
     private Text finalMoneyText;
     [SerializeField]
     private GameObject gameOverPanel;
-    [SerializeField]
-    private Sprite[] skins;
 
     [SerializeField]
     private Canvas bossHpCanvas;
@@ -51,16 +53,15 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject nextStageButton;
 
-
-    // For Test. there will be removed.
-    public int type = 0;
-    public Text scoreText;
-    public Text hpText;
-    public bool bossTime;
-
+    [SerializeField]
+    private Text scoreText;
+    [SerializeField]
+    private Text hpText;
+    
     private GameObject player;
     private List<GameObject> currentEnemies = new List<GameObject>();
 
+    // Server variables
     private RequestHelper currentRequest;
     private const string basePath = "http://ec2-3-36-132-39.ap-northeast-2.compute.amazonaws.com";
 
@@ -80,11 +81,20 @@ public class GameManager : MonoBehaviour
         get { return stage; }
         set { if (stage > 0 && stage < 4) stage = value; else stage = 1; }
     }
-
     public bool IsGameOver
     {
         get { return isGameOver; }
         set { isGameOver = value; }
+    }
+    public bool IsBossTime
+    {
+        get { return bossTime; }
+        set { bossTime = value; }
+    }
+    public int Type
+    {
+        get { return type; }
+        set { if (value >= 0 && value <= 3) type = value; else type = 0; }
     }
 
 
@@ -96,8 +106,8 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        type = PlayerInformation.currentStage - 1;
-        bossTime = false;
+        Type = PlayerInformation.currentStage - 1;
+        IsBossTime = false;
         IsGameOver = false;
 
         StartCoroutine(PlayBossFlow());
@@ -113,6 +123,10 @@ public class GameManager : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : InitPlayer()
+    * descrition : Instantiate the player and attach the movement, shooting joysticks.
+    ********************************************/
     private void InitPlayer()
     {
         int flightIndex = PlayerInformation.selectedFlight;
@@ -147,17 +161,30 @@ public class GameManager : MonoBehaviour
     }
 
 
+    /********************************************
+     * Function : AddScore(int score)
+     * descrition : Add the score
+     ********************************************/
     public void AddScore(int score)
     {
         Score += score;
     }
 
+
+    /********************************************
+     * Function : AddGameMoney(double money)
+     * descrition : Add the money
+     ********************************************/
     public void AddGameMoney(double money)
     {
         Money += money;
     }
 
 
+    /********************************************
+     * Function : GameOver()
+     * descrition : Stop Game and call the ShowEndPanel() method for showing the game result.
+     ********************************************/
     public void GameOver()
     {
         AudioManager.Instance.PlayPlayerDeathClip();
@@ -172,6 +199,10 @@ public class GameManager : MonoBehaviour
     }
 
 
+    /********************************************
+     * Function : BossDead()
+     * descrition : When the boss is died, call the ShowEndPanel() method and set it for the next stage or ending.
+     ********************************************/
     public void BossDead()
     {
         int clearedStage = PlayerInformation.clearedStage;
@@ -191,9 +222,11 @@ public class GameManager : MonoBehaviour
         ShowEndPanel();
 
         if (clearedStage == 3 && currentStage == 3) {
+            // Ending Text
             endPanelText.text = "All Stage Clear !";
         }
         else {
+            // Can go to the next stage
             endPanelText.text = "Clear Stage " + currentStage + " !";
         }
         
@@ -203,9 +236,17 @@ public class GameManager : MonoBehaviour
     }
 
 
-    public void ShowEndPanel()
+    /********************************************
+     * Function : ShowEndPanel()
+     * descrition : 
+     *  - Call the NoticeToServer() method for sending play information. 
+     *  - Result panel set active.
+     *  - Update player information.
+     ********************************************/
+    private void ShowEndPanel()
     {
         NoticeToServer();
+
         gameOverPanel.SetActive(true);
         movementJoystick.gameObject.SetActive(false);
         shootingJoystick.gameObject.SetActive(false);
@@ -218,13 +259,21 @@ public class GameManager : MonoBehaviour
     }
 
 
+    /********************************************
+     * Function : RemoveEnemy(GameObject o)
+     * descrition : Remove the enemy object as a parameter.
+     ********************************************/
     public void RemoveEnemy(GameObject o)
     {
         currentEnemies.Remove(o);
     }
 
 
-    public void NoticeToServer()
+    /********************************************
+    * Function : NoticeToServer()
+    * descrition : The score, money, and stage information of the stage is sent to the server by the PUT method.
+    ********************************************/
+    private void NoticeToServer()
     {
         int updatedStage = PlayerInformation.clearedStage;
         if (!IsGameOver) {
@@ -245,9 +294,7 @@ public class GameManager : MonoBehaviour
                     break;
             }
         }
-
-        Debug.Log(updatedStage);
-
+        
         StageUser updatedUser = new StageUser {
             score = Score,
             money = Money,
@@ -278,25 +325,33 @@ public class GameManager : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : PlayBossFlow()
+    * descrition : After some time, instantiate the boss.
+    ********************************************/
     IEnumerator PlayBossFlow()
     {
-        yield return new WaitForSeconds(10.0f);
-        bossTime = true;
+        yield return new WaitForSeconds(15.0f);
+        IsBossTime = true;
         
         bossHpCanvas.gameObject.SetActive(true);
-        GameObject boss = Instantiate(bosses[type], new Vector3(0, 2.85f, 0), new Quaternion(0, 0, 180, 0));
-        
+        Instantiate(bosses[Type], new Vector3(0, 2.85f, 0), new Quaternion(0, 0, 180, 0));
     }
 
+
+    /********************************************
+    * Function : PlayGameFlow()
+    * descrition : Instantiate the enemy with time flow.
+    ********************************************/
     IEnumerator PlayGameFlow()
     {
         while (true)
         {
-            if(IsGameOver || bossTime) break;
+            if(IsGameOver || IsBossTime) break;
             int num = 5;
             for(int i=0; i< num; i++)
             {
-                GameObject currentEnemy = Instantiate(enemies[type], 
+                GameObject currentEnemy = Instantiate(enemies[Type], 
                     gameObject.transform.position, new Quaternion(0, 0, 180, 0));
                 currentEnemies.Add(currentEnemy);
                 
@@ -307,6 +362,10 @@ public class GameManager : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : NextGame()
+    * descrition : If the player defeats the boss, go to the next stage.
+    ********************************************/
     public void NextGame()
     {
         PlayerInformation.currentStage += 1;
@@ -314,12 +373,20 @@ public class GameManager : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : ReGame()
+    * descrition : Re start the play scene.
+    ********************************************/
     public void ReGame()
     {
         SceneManager.LoadScene("PlayScene");
     }
 
 
+    /********************************************
+    * Function : OnClickBack()
+    * descrition : Go to the MenuScene
+    ********************************************/
     public void OnClickBack()
     {
         SceneManager.LoadScene("MenuScene");

@@ -116,6 +116,7 @@ public class MenuManager : MonoBehaviour
     public void SetAbleStageButtons()
     {
         int clearedStage = PlayerInformation.clearedStage;
+        Debug.Log(clearedStage);
         for(int i=0; i<clearedStage+1; i++)
         {
             if (i == 3) break;

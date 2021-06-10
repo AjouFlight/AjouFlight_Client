@@ -6,8 +6,10 @@ public class MovementJoystick : MonoBehaviour, IDragHandler, IPointerDownHandler
 {
     public Vector2 moveJoystickVec2 { get; private set; }
 
-    public RectTransform joystickRect;
-    public Image innerPad;
+    [SerializeField]
+    private RectTransform joystickRect;
+    [SerializeField]
+    private Image innerPad;
 
 
     void Start()

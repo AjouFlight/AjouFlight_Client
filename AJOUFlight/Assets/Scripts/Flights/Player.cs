@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public abstract class Player : MonoBehaviour
 {
@@ -8,21 +6,19 @@ public abstract class Player : MonoBehaviour
     private int hp;
     private float speed;
 
-    [SerializeField]
-    private Rigidbody2D playerRigid;
-
     private MovementJoystick movementJoystick;
     private ShootingJoystick shootingJoystick;
 
     [SerializeField]
-    private HealthBar healthBar;
+    private Rigidbody2D playerRigid;
 
+    [SerializeField]
+    private HealthBar healthBar;
+    
     [SerializeField]
     private GameObject bullet;
 
-    [SerializeField]
-    private GameObject[] colleages;
-
+    // Strategy
     private Shoot shoot;
 
 
@@ -57,7 +53,7 @@ public abstract class Player : MonoBehaviour
     void Start()
     {
         int flightIndex = PlayerInformation.selectedFlight;
-        Hp = (flightIndex + 1) * 100 + 1000;
+        Hp = (flightIndex + 1) * 100;
         Speed = 3.0f + (flightIndex + 1) * 0.2f;
 
         healthBar.SetMaxHealth(Hp);
@@ -72,6 +68,10 @@ public abstract class Player : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : SetShoots(Shoot s)
+    * descrition : select the shoot type.
+    ********************************************/
     public void SetShoots(Shoot s)
     {
         if (s == null) {
@@ -83,6 +83,11 @@ public abstract class Player : MonoBehaviour
     }
 
 
+
+    /********************************************
+    * Function : PerformShoot()
+    * descrition : Execute the shoot.
+    ********************************************/
     public void PerformShoot()
     {
         if(shoot != null)
@@ -90,6 +95,10 @@ public abstract class Player : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : Move()
+    * descrition : The player moves according to joystick direction.
+    ********************************************/
     private void Move()
     {
         float x = MoveJoystick.moveJoystickVec2.x;
@@ -102,6 +111,10 @@ public abstract class Player : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : Rotate()
+    * descrition : The player rotates according to joystick direction.
+    ********************************************/
     private void Rotate()
     {
         Vector2 originVec = gameObject.transform.up;
@@ -115,12 +128,12 @@ public abstract class Player : MonoBehaviour
     }
 
 
-    private void AbsorbSoul()
-    {
-        // absorb the soul.
-    }
-
-
+    /********************************************
+    * Function : Rotate()
+    * descrition : 
+    *  - When the player collides with the Enemy Bullet, the Player Hp is reduced. 
+    *  - When Hp <= 0, GameOver. And update Healthbar.
+    ********************************************/
     private void TakeDamage(int damage)
     {
         Hp -= damage;
@@ -133,6 +146,12 @@ public abstract class Player : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : OnTriggerEnter2D(Collider2D collision)
+    * descrition : 
+    *  - When the player collides with something, this method will be called. 
+    *  - If something is enemy bullet, TakeDamage method will be worked.
+    ********************************************/
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("EnemyBullet"))

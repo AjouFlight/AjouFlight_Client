@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public abstract class Enemy : MonoBehaviour
 {
@@ -38,10 +36,10 @@ public abstract class Enemy : MonoBehaviour
 
     void Start()
     {
-        if (GameManager.Instance.bossTime) {
+        if (GameManager.Instance.IsBossTime) {
             healthBar = GameObject.Find("Boss Canvas").transform.GetChild(0).GetComponent<HealthBar>();
-            healthBar.SetMaxHealth((GameManager.Instance.type+1) * 200);
-            healthBar.SetHealth((GameManager.Instance.type+1) * 200);
+            healthBar.SetMaxHealth((GameManager.Instance.Type+1) * 200);
+            healthBar.SetHealth((GameManager.Instance.Type+1) * 200);
         }
         else{
             healthBar.SetMaxHealth(Hp);
@@ -50,12 +48,10 @@ public abstract class Enemy : MonoBehaviour
         PerformShoot();
     }
 
-    void Update()
-    {
-        
-    }
-
-
+    /********************************************
+    * Function : SetShoots(Shoot s)
+    * descrition : select the shoot type.
+    ********************************************/
     public void SetShoots(Shoot s)
     {
         if (s == null) {
@@ -68,6 +64,10 @@ public abstract class Enemy : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : PerformShoot()
+    * descrition : Execute the shoot.
+    ********************************************/
     public void PerformShoot()
     {
         if(shoot != null)
@@ -75,6 +75,11 @@ public abstract class Enemy : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : TakeDamage(int damage)
+    * descrition : When the enemy collides with the player bullet, 
+    *           the enemy Hp is reduced. When Hp <= 0, the enemy will die.
+    ********************************************/
     private void TakeDamage(int damage)
     {
         Hp -= damage;
@@ -85,6 +90,12 @@ public abstract class Enemy : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : OnDead()
+    * descrition : 
+    *  - When the enemy Hp is 0, call this method. 
+    *  - OnDead method is different from normal enemy and boss.
+    ********************************************/
     protected virtual void OnDead()
     {
         GameManager.Instance.RemoveEnemy(gameObject);
@@ -95,6 +106,12 @@ public abstract class Enemy : MonoBehaviour
     }
 
 
+    /********************************************
+    * Function : OnTriggerEnter2D(Collider2D collision)
+    * descrition : 
+    *  - When the enemy collides with something, this method will be called. 
+    *  - If something is player bullet, TakeDamage method will be called.
+    ********************************************/
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("PlayerBullet"))
@@ -106,9 +123,4 @@ public abstract class Enemy : MonoBehaviour
         }
     }
 
-
-    private void ExcapeSoul()
-    {
-        // Escape the soul ...
-    }
 }

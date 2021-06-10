@@ -14,6 +14,8 @@ public class BossAShoot : Shoot
         StartCoroutine(Shooting());
     }
 
+
+
     private IEnumerator Shooting()
     {
         float x = 0.0f;

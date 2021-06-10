@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class EnemyC : Enemy
+﻿public class EnemyC : Enemy
 {
     private readonly int startHp = 70;
     private readonly int score = 30;
@@ -10,15 +6,14 @@ public class EnemyC : Enemy
 
     void Awake()
     {
+        // Set the enemy stat
         Hp = startHp;
         ScoreAmount = score;
         MoneyAmount = moeny;
+
+        // Set the shoot type
         EnemyPowerCShoot enemyPowerCShoot = gameObject.AddComponent<EnemyPowerCShoot>();
         SetShoots(enemyPowerCShoot);
     }
 
-    void Update()
-    {
-        
-    }
 }

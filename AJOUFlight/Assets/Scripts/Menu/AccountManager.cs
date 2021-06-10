@@ -78,7 +78,7 @@ public class AccountManager : MonoBehaviour
             
             PlayerInformation.playerID = user.userId;
             PlayerInformation.token = res.data.token;
-            PlayerInformation.clearedStage = res.data.stage - 1;
+            PlayerInformation.clearedStage = res.data.stage;
             PlayerInformation.score = res.data.score;
             PlayerInformation.money = res.data.money;
             PlayerInformation.selectedSkin = res.data.skin;

@@ -28,7 +28,7 @@ public class StoreManager : MonoBehaviour
     }
 
 
-    public void InitStore()
+    private void InitStore()
     {
         canSelectFlights = PlayerInformation.canSelectFlight;
         gameMoney = PlayerInformation.money;
@@ -87,12 +87,12 @@ public class StoreManager : MonoBehaviour
         RestClient.Post<ServerResponse>(currentRequest)
         .Then(res => {
             Debug.Log("Success Post!");
-            EditorUtility.DisplayDialog("Success", JsonUtility.ToJson(res, true), "Ok");
+            // EditorUtility.DisplayDialog("Success", JsonUtility.ToJson(res, true), "Ok");
         })
         .Catch(err =>
         {
             Debug.Log(err.ToString());
-            EditorUtility.DisplayDialog("error", err.Message, "Ok");
+            // EditorUtility.DisplayDialog("error", err.Message, "Ok");
         });
     }
 

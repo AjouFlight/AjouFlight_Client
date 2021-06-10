@@ -6,6 +6,7 @@ public class Bullet : MonoBehaviour, IBullet
 {
     private float speed;
     private int damage;
+    private Rigidbody2D bulletRigid;
 
     public float Speed
     {
@@ -18,8 +19,6 @@ public class Bullet : MonoBehaviour, IBullet
         get { return damage; }
         set { if (value < 0) damage = 0; else damage = value; }
     }
-
-    private Rigidbody2D bulletRigid;
 
 
     void Awake()
@@ -35,12 +34,20 @@ public class Bullet : MonoBehaviour, IBullet
     }
 
 
+    /********************************************
+    * Function : MoveForward()
+    * descrition : Bullets move upwards in Flight.
+    ********************************************/
     public void MoveForward()
     {
         bulletRigid.velocity = transform.TransformDirection(Vector2.up) * Speed;
     }
 
 
+    /********************************************
+    * Function : SetBullet(float speed, int damage)
+    * descrition : Set the bullet’s stat.
+    ********************************************/
     public void SetBullet(float speed, int damage)
     {
         Speed = speed;
